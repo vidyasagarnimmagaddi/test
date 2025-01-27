@@ -1,0 +1,40 @@
+name: Check Emulator Version
+
+on:
+  push
+
+jobs:
+  check-emulator-version:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+      fail-fast: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Android SDK
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+
+      - name: Install SDK tools
+        run: |
+          export ANDROID_HOME=$HOME/Android/Sdk
+          export PATH=$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
+          
+          # Install Android Emulator and required tools
+          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "emulator" "platform-tools" "system-images;android-35;google_apis;x86_64"
+
+      - name: Check Emulator Version
+        run: |
+          echo "Checking Android Emulator version..."
+          ${ANDROID_HOME}/emulator/emulator -version
+          
+      - name: List Available AVDs
+        run: |
+          echo "Listing AVDs..."
+          ${ANDROID_HOME}/emulator/emulator -list-avds
